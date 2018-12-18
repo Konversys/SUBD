@@ -1,0 +1,16 @@
+CREATE OR REPLACE FUNCTION calc_total() RETURNS TRIGGER AS $calc_total$
+BEGIN
+        IF (NEW.erating <> OLD.erating) THEN
+            update iеrecord
+			set trating = ((NEW.erating + NEW.srating) / 2)
+			where id_student=new.id_student;
+        	
+			RETURN NEW;
+		END IF;
+		RETURN NULL;
+    END;
+$calc_total$ LANGUAGE plpgsql;
+
+CREATE TRIGGER calc_total
+AFTER INSERT OR UPDATE ON iеrecord
+    FOR EACH ROW EXECUTE PROCEDURE calc_total();

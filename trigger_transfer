@@ -1,0 +1,22 @@
+CREATE OR REPLACE FUNCTION trans_rate() RETURNS TRIGGER AS $transfer$
+BEGIN
+        IF (NEW.erating < 25) THEN
+            RAISE EXCEPTION 'Студент не пересдал экзамен';
+        ELSE
+			UPDATE iеrecord
+			SET erating=NEW.erating 
+			WHERE iеrecord.id_student=NEW.id_student 
+				AND (SELECT erecord.id_subject 
+						FROM erecord, iеrecord
+						WHERE erecord.id=iеrecord.id_erecord AND
+						iеrecord.id_student=NEW.id_student
+						GROUP BY ID_SUBJECT) = NEW.id_subject;
+        RETURN NEW;
+		END IF;
+		RETURN NULL;
+    END;
+$transfer$ LANGUAGE plpgsql;
+
+CREATE TRIGGER transfer
+AFTER INSERT ON tolerance
+    FOR EACH ROW EXECUTE PROCEDURE trans_rate();

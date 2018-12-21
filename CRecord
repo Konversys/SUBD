@@ -1,0 +1,38 @@
+/* Чтобы сформировать ведомость:
+  1. Создать CRecord
+  2. Создать ICRecord для каждого студента из группы
+  3. Создать SRating для каждого студента
+  
+  SRating.Rating = GetSubjectRating(IRecord.id_student, semestr.id) - На вход студент и семестр, на выходе - список оценок за все дисциплины в этом семаке
+  Я ввел таблицу семестр т.к без нее нельзя узнать какие предметы из экзам. ведомости
+  должны быть в сводной ведомости
+  
+  GetStudentsByDirNum(direction_ int , group_ int) - На вход ID направления и номера группы, на выходе - список всех студентов с заданными условиями
+  
+  Пацаны если я не беру трубку значит я сплю. Лег в 9 утра.
+
+*/
+
+create or replace function GetStudentsByDirNum(direction_ int , group_ int) returns table(student int) as $$ 
+BEGIN 
+return query 
+select student.id from student, groupp, direction where 
+	student.id_group = groupp.id AND
+	groupp.id_direction = direction.id AND
+	groupp.id = group_ AND
+	direction.id = direction_;
+END; 
+$$ LANGUAGE plpgsql;
+
+create or replace function GetSubjectRating(studentId int, semestrId int) returns table(student int, subject int, trating int ) as $$ 
+BEGIN 
+return query 
+select ierecord.id_student, erecord.id_subject, ierecord.trating
+	from ierecord, erecord, subject, semestr
+	where subject.id = erecord.id_subject AND
+			erecord.id = ierecord.id_erecord AND
+			subject.id_semestr = semestr.id AND
+			semestr.id = semestrId AND
+			ierecord.id_student =  studentId;
+END; 
+$$ LANGUAGE plpgsql;

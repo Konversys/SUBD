@@ -35,7 +35,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
+-- Тригер на добавление оценок за каждый предмет в данном семестре в сводную ведомость для каждого студента
 CREATE OR REPLACE FUNCTION f_icrecord() RETURNS TRIGGER AS $transfer$
 DECLARE
  i record;
@@ -53,3 +53,21 @@ $transfer$ LANGUAGE plpgsql;
 CREATE TRIGGER tg_icrecord
 AFTER INSERT ON icrecord
     FOR EACH ROW EXECUTE PROCEDURE f_icrecord();
+    
+    
+   
+-- Тригер на добавление студентов данной группы в сводную ведомость   
+CREATE OR REPLACE FUNCTION f_crecord() RETURNS TRIGGER AS $transfer$
+DECLARE
+ i record;
+BEGIN
+	FOR i IN 
+	 	SELECT * FROM GetStudentsByDirNum(new.id_group) LOOP
+		INSERT INTO icrecord (id_crecord, id_student) VALUES (new.id, i.student );
+	END LOOP;
+	RETURN NEW;
+END;
+
+CREATE TRIGGER tg_crecord
+AFTER INSERT ON crecord
+    FOR EACH ROW EXECUTE PROCEDURE f_crecord();

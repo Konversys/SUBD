@@ -8,10 +8,7 @@
   должны быть в сводной ведомости
   
   GetStudentsByDirNum(direction_ int , group_ int) - На вход ID направления и номера группы, на выходе - список всех студентов с заданными условиями
-  
-  Пацаны если я не беру трубку значит я сплю. Лег в 9 утра.
-
-*/
+ */
 
 create or replace function GetStudentsByDirNum(direction_ int , group_ int) returns table(student int) as $$ 
 BEGIN 
@@ -36,3 +33,23 @@ select ierecord.id_student, erecord.id_subject, ierecord.trating
 			ierecord.id_student =  studentId;
 END; 
 $$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION f_icrecord() RETURNS TRIGGER AS $transfer$
+DECLARE
+ i record;
+ sem integer;
+BEGIN
+	sem := (select id_semestr from crecord where crecord.id = new.id_crecord limit 1);
+	FOR i IN 
+	 	SELECT * FROM GetSubjectRating(new.id_student, sem) LOOP
+		INSERT INTO srating (rating, id_subject, id_icrecord, id_crecord) VALUES (i.trating, i.subject, new.id, new.id_crecord);
+	END LOOP;
+	RETURN NEW;
+END;
+$transfer$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_icrecord
+AFTER INSERT ON icrecord
+    FOR EACH ROW EXECUTE PROCEDURE f_icrecord();

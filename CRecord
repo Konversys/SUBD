@@ -7,17 +7,16 @@
   Я ввел таблицу семестр т.к без нее нельзя узнать какие предметы из экзам. ведомости
   должны быть в сводной ведомости
   
-  GetStudentsByDirNum(direction_ int , group_ int) - На вход ID направления и номера группы, на выходе - список всех студентов с заданными условиями
+  GetStudentsByDirNum(group_ int) - На вход ID направления и номера группы, на выходе - список всех студентов с заданными условиями
  */
 
-create or replace function GetStudentsByDirNum(direction_ int , group_ int) returns table(student int) as $$ 
+create or replace function GetStudentsByDirNum(group_ int) returns table(student int) as $$ 
 BEGIN 
 return query 
 select student.id from student, groupp, direction where 
 	student.id_group = groupp.id AND
 	groupp.id_direction = direction.id AND
-	groupp.id = group_ AND
-	direction.id = direction_;
+	groupp.id = group_;
 END; 
 $$ LANGUAGE plpgsql;
 
